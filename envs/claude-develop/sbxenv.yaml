@@ -1,0 +1,41 @@
+schemaVersion: "1"
+agent: sbx-kit-claude
+name: claude-develop-${{env.args.owner}}-${{env.args.repo}}-${{env.args.issue}}
+
+args:
+  owner:
+    required: true
+    description: Repo owner
+    pattern: "^[A-Za-z0-9_.-]+$"
+  repo:
+    required: true
+    description: Repo name
+    pattern: "^[A-Za-z0-9_.-]+$"
+  issue:
+    required: true
+    description: Issue number
+    pattern: "^[0-9]+$"
+
+kits:
+  - source: docker.io/docker/sbx-kit-claude:latest
+    args:
+      model: claude-sonnet-5
+      reasoningEffort: medium
+  - source: docker.io/docker/sbx-kit-gh:latest
+  - source: ${{env.fileDir}}/../../mixins/claude-config
+  - source: ${{env.fileDir}}/../../mixins/gh-clone
+    args:
+      owner: ${{env.args.owner}}
+      repo: ${{env.args.repo}}
+      branch: feature/${{env.args.issue}}
+
+lifecycle:
+  postCreate:
+    - name: Clear sessions
+      command: |
+        sbx exec "$SBX_SANDBOX_NAME" bash -c "ls -la ~/.claude/sessions"
+
+cmd:
+  [
+    "Start the development process for issue ${{env.args.issue}} in repo ${{env.args.owner}}/${{env.args.repo}}",
+  ]

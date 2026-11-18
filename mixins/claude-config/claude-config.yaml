@@ -1,0 +1,13 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: Claude Code plugins
+description: Provides managed Claude Code config in /etc/claude-code.
+version: "1.0.0"
+requires: ["claude"]
+
+build: |
+  # syntax=docker/dockerfile:1
+  FROM scratch
+  ENV CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1
+  COPY claude-code /etc/claude-code

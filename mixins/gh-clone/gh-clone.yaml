@@ -1,0 +1,44 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: GH Clone
+description: Check out a GitHub repo branch into the workspace. Can also find the associated branch of a pull request.
+version: "1.0.0"
+requires: ["gh"]
+
+args:
+  owner:
+    required: true
+    description: Repo owner
+    env: OWNER
+  repo:
+    required: true
+    description: Repo name
+    env: REPO
+  branch:
+    required: false
+    description: Branch name
+    env: BRANCH
+  pull_request:
+    required: false
+    description: Pull request number
+    env: PULL_REQUEST
+
+capabilities:
+  - type: com.docker.sandbox/lifecycle@1
+    config:
+      install:
+        - description: Clone repo into workspace
+          user: "1000"
+          env: [GH_TOKEN, OWNER, REPO, BRANCH, PULL_REQUEST]
+          command: |
+            set -eu
+            echo "OWNER: $OWNER"
+            echo "REPO: $REPO"
+            echo "BRANCH: $BRANCH"
+            gh repo clone "$OWNER/$REPO" .
+            if [ -n "${PULL_REQUEST:-}" ]; then
+              gh pr checkout "$PULL_REQUEST"
+            else
+              git switch "$BRANCH" 2>/dev/null || git switch -c "$BRANCH"
+            fi

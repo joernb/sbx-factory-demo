@@ -1,0 +1,35 @@
+schemaVersion: "1"
+agent: sbx-kit-claude
+name: claude-review-${{env.args.owner}}-${{env.args.repo}}-${{env.args.pull_request}}
+
+args:
+  owner:
+    required: true
+    description: Repo owner
+    pattern: "^[A-Za-z0-9_.-]+$"
+  repo:
+    required: true
+    description: Repo name
+    pattern: "^[A-Za-z0-9_.-]+$"
+  pull_request:
+    required: true
+    description: Pull request number
+    pattern: "^[0-9]+$"
+
+kits:
+  - source: docker.io/docker/sbx-kit-claude:latest
+    args:
+      model: claude-opus-5-5
+      reasoningEffort: medium
+  - source: docker.io/docker/sbx-kit-gh:latest
+  - source: ${{env.fileDir}}/../../mixins/claude-config
+  - source: ${{env.fileDir}}/../../mixins/gh-clone
+    args:
+      owner: ${{env.args.owner}}
+      repo: ${{env.args.repo}}
+      pull_request: ${{env.args.pull_request}}
+
+cmd:
+  [
+    "Review the pull request ${{env.args.pull_request}} in repo ${{env.args.owner}}/${{env.args.repo}}",
+  ]
